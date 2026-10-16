@@ -81,7 +81,19 @@ Nguồn: mục `logs.EgoMLP.per_seed` trong [closedloop.json](evidence/closedloo
 ## Câu 6 · Tác nhân phản ứng
 Dán bảng "xe sau phát lại" và "xe sau phản ứng". `T` bạn hiệu chỉnh là bao nhiêu, xe sau chân thực đến mức nào so với xe không phản ứng? Vì sao IDM bị tính "va chạm giả" khi xe sau chỉ phát lại, và điều này làm đổi kết luận về bộ điều khiển ra sao?
 
-(trả lời ở đây)
+Hiệu chỉnh T = 1,4 s cho W1 = 0,3455, nhỏ hơn 0,8594 của xe không phản ứng; headway người lái trung vị 1,8602 s. Đây là khớp một phân bố, chưa chứng minh tác nhân giống người ở mọi hành vi.
+
+| Bộ điều khiển | Trễ ego 0 s: replay / reactive (%) | Trễ ego 0,6 s: replay / reactive (%) |
+|---|---|---|
+| constant-velocity | 77,630 / 77,630 | 77,630 / 77,630 |
+| IDM | 75,259 / 2,222 | 75,741 / 7,444 |
+| EgoMLP | 75,037 / 75,037 | 76,000 / 76,000 |
+| PercMLP | 83,370 / 14,333 | 82,000 / 23,185 |
+
+Bảng là phần trăm ô có bất kỳ va chạm, lấy seed xấu nhất theo thế giới reactive như pipeline quy định. Xe sau cách 18,8 m, trễ phản ứng 0,6 s.  
+IDM phanh để tránh xe cắt vào nhưng xe sau replay vẫn giữ tốc độ, gây va chạm phía sau “giả” 73,037% ở trễ ego 0 s và 68,296% ở 0,6 s; xe sau reactive có 0% va chạm phía sau ở đây.  
+Với replay và ego trễ 0,6 s, IDM 75,741% trông chỉ nhỉnh hơn constant-velocity 77,630%; khi xe sau phản ứng, IDM còn 7,444%, chênh lệch mới thể hiện rõ.  
+Ở trễ ego 0 s, EgoMLP còn có vẻ tốt hơn IDM theo replay (75,037% so với 75,259%), nhưng thứ tự đổi hẳn khi reactive (75,037% so với 2,222%). Nguồn: [agents.json](evidence/agents.json).
 
 ## Câu 7 · Cổng phát hành và sửa
 Quy tắc nào chặn PercMLP và nguyên nhân gốc là gì (dẫn số)? Bạn sửa bằng gì và vì sao nó chữa đúng nguyên nhân? Sau khi qua cổng, PercMLP+ có **tốt hơn** IDM không? Nó có nên được phát hành không, và bạn đề xuất làm gì trước khi quyết định?
