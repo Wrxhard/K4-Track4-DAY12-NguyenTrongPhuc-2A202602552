@@ -45,7 +45,12 @@ Chi phí xử lý mô phỏng có spike vượt deadline 100 ms; phát nhanh kh�
 ## Câu 3 · Kịch bản
 Lưới của bạn (tốc độ cruise, giới hạn khoảng cách, số ô): bao nhiêu % ô **không ai tránh được**? Độ trễ phản ứng 0 → 0,6 s làm vùng đâm của IDM tăng bao nhiêu? Log có phủ vùng khó không? (dẫn giới hạn phanh mạnh nhất của người lái trong log, và phần lưới đòi hỏi hơn thế)
 
-(trả lời ở đây)
+Lưới dùng cruise 12 m/s, gap 2,7601–59,3123 m, closing 0–12 m/s; 60 × 45 = 2.700 ô. Khai thác được 614 ca phanh, chiếm 6,389% quỹ đạo.  
+Trong thời gian phản ứng mất dv × t_react khoảng cách; sau đó cần dv²/(2b_max) để triệt tiêu tốc độ tiến gần. Ô có gap nhỏ hơn tổng này là bất khả thi.  
+Tỷ lệ bất khả thi tăng từ 2,222% ở trễ 0 s lên 7,444% ở trễ 0,6 s; vùng đâm IDM tăng tương ứng 5,222 điểm phần trăm.  
+FullBrake và biên vật lý lệch 0 ô ngoài vùng sát biên ở cả hai độ trễ; diện tích lỗi quy cho IDM bằng 0, tránh gán lỗi điều khiển cho tình huống ai cũng đâm.  
+Giới hạn phanh người lái p99,9 là 3,6248 m/s², thấp hơn khả năng cơ cấu 9 m/s²; 8,556% lưới đòi phanh mạnh hơn mức đã thấy trong log.  
+Do đó log không đủ phủ vùng khó; trung bình trên log có thể che thất bại khi cắt vào gấp. Nguồn: [scenarios.json](evidence/scenarios.json), [hình lưới](evidence/scenarios_idm.png).
 
 ## Câu 4 · Vòng hở và vòng kín
 Dán bảng L2 và tỷ lệ va chạm của bốn bộ điều khiển (kèm hạng ở mỗi cách chấm). Cặp nào đổi thứ tự? Vì sao IDM có L2 như vậy mà vẫn lái tốt? Vì sao EgoMLP có L2 tốt hơn constant-velocity mà vẫn đâm?
