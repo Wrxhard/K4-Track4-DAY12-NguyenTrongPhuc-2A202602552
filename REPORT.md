@@ -69,6 +69,8 @@ Hình lưới cho thấy các chấm log tập trung ở closing thấp, thưa �
 
 ## Câu 4 · Vòng hở và vòng kín
 
+Đánh giá vòng hở: 167553 cửa sổ train, 71580 cửa sổ test; lát cắt phanh 4,3546%. const-vel: L2 trung bình/lát cắt 1,2488/1,8660 m; IDM: L2 trung bình/lát cắt 1,5452/1,6373 m; EgoMLP: L2 trung bình/lát cắt 0,7586/1,0257 m; PercMLP: L2 trung bình/lát cắt 0,6239/0,8223 m. Nguồn: [openloop.json](evidence/openloop.json).
+
 Chấm 2883 quỹ đạo giữ lại, gồm 165 đoạn xe dẫn phanh. Bảng dùng trung bình qua seed để xếp hạng, đồng thời nêu dải va chạm.
 
 | Bộ điều khiển | L2 trung bình (m) / hạng | Va chạm trung bình (%) / hạng | Dải va chạm (%) |
@@ -151,40 +153,3 @@ Thứ tư, 2.700 ô và 3 seed chưa bảo đảm gặp sự kiện hiếm; các
 Cuối cùng, ngưỡng cổng là tiêu chí của lab và nhãn sửa đến từ IDM; qua cổng chỉ hỗ trợ kết luận trong phạm vi mô phỏng. Trước phát hành cần kiểm định ngoài phân bố, đo độ thoải mái/tiến triển và thử nghiệm có kiểm soát, có giám sát.
 
 Các quy mô và mức nhiễu đối chiếu trong [scenarios.json](evidence/scenarios.json) và [closedloop.json](evidence/closedloop.json).
-
-## Chạy local và chụp màn hình
-
-CP3: 167553 cửa sổ train, 71580 cửa sổ test; lát cắt phanh 4,3546%. const-vel: L2 trung bình/lát cắt 1,2488/1,8660 m; IDM: L2 trung bình/lát cắt 1,5452/1,6373 m; EgoMLP: L2 trung bình/lát cắt 0,7586/1,0257 m; PercMLP: L2 trung bình/lát cắt 0,6239/0,8223 m. Nguồn: [openloop.json](evidence/openloop.json).
-
-Chạy PowerShell trong thư mục chứa `run_all.py`. Dữ liệu `data/`, model `work/` và hai file xuất cho 3D được giữ local theo `.gitignore`.
-
-```powershell
-$env:PYTHONUTF8 = '1'
-$env:OPENBLAS_NUM_THREADS = '1'
-python -m pip install -r requirements.txt
-python run_all.py --student-id 2A202602552 --seeds 3
-python -m unittest discover -s tests -v
-python scripts/check_submission.py --save-verify
-python scripts/export_viz.py
-python viz/serve.py
-```
-
-Mở <http://localhost:8765> sau lệnh cuối; giữ cửa sổ terminal chạy server. Lần mở lại trên máy hiện tại chỉ cần hai lệnh `export_viz.py` và `viz/serve.py` nếu model đã có. Trang 3D cần internet để nạp three.js.
-
-Rubric chấm JSON và hình do pipeline sinh, không bắt buộc ảnh chụp màn hình. Nếu cần nộp thêm screenshot, dùng `Win + Shift + S`, lưu ảnh thật vào `evidence/screenshots/`; không dùng hình 3D để thay số liệu JSON.
-
-| CP | Nội dung cần hiện rõ khi chụp | Evidence chính |
-|---|---|---|
-| 0 | Terminal `python run_all.py data`: số quỹ đạo, tương quan và số trùng | `data_audit.json` |
-| 1 | Terminal bước `replay`: 600 đoạn, float32, AEB, realtime | `replay.json` |
-| 2 | Mở `evidence/scenarios_idm.png`: đủ hai panel và đường biên | `scenarios.json`, `scenarios_idm.png` |
-| 3 | Terminal bước `openloop`: bảng L2 và lát cắt | `openloop.json` |
-| 4 | Mở `evidence/openloop_vs_closedloop.png`, kèm bảng hạng trong terminal | `closedloop.json` |
-| 5 | Terminal bước `agents`: T hiệu chỉnh, hai bảng phát lại/phản ứng | `agents.json` |
-| 6 | Terminal bước `gate`: các quy tắc BLOCK của PercMLP | `gate.json` |
-| 7 | Terminal bước `fix`: trước/sau, kết quả cổng và thử tốc độ 20 m/s | `fix.json` |
-| 8 | Trình duyệt localhost: chọn PercMLP+, seed, cảnh cắt vào và bảng cổng cuối trang | Chỉ minh họa bổ sung |
-
-Để chụp lại một bước, dùng `python run_all.py --student-id 2A202602552 --seeds 3 <tên-bước>`. Bước `openloop` và `fix` huấn luyện lại; sau khi chạy lại `closedloop`/`agents` cần chạy `fix` để cập nhật đủ PercMLP+ trước khi kiểm tra nộp bài. Sau khi thêm ảnh: `git add evidence/screenshots`, `git commit -m "docs: add local checkpoint screenshots"`, `git push origin main`.
-
-Môi trường chạy cuối: Python 3.13.6; NumPy 2.3.2; Windows; OPENBLAS_NUM_THREADS=1. Các checkpoint trước đã thử 5 seed; bộ evidence nộp cuối được chạy lại toàn bộ với 3 seed theo lựa chọn dành cho máy chậm trong README.
