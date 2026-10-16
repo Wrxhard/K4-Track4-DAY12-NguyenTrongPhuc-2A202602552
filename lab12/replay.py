@@ -124,7 +124,7 @@ def compare_with_tol(golden, new, atol=1e-3, rtol=1e-3):
     #   differing_segments (tối đa 20 chỉ số đầu, dạng list).
     golden, new = np.asarray(golden), np.asarray(new)
     equal_nan = np.isnan(golden) & np.isnan(new)
-    exact = (golden == new) | equal_nan
+    exact = ((golden == new) & (np.signbit(golden) == np.signbit(new))) | equal_nan
     close = np.isclose(new, golden, atol=atol, rtol=rtol, equal_nan=True)
     differing = np.flatnonzero(~close.all(axis=1))
     delta = np.where(exact, 0.0, np.abs(new - golden))

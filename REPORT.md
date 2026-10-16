@@ -16,10 +16,10 @@
 
 | Bộ điều khiển | L2 vòng hở (m) | Va chạm vòng kín trên log (%) | Quyết định cổng |
 |---|---|---|---|
-| constant-velocity | 1,2488 | Chờ CP4 | Chờ CP6 |
-| IDM | 1,5452 | Chờ CP4 | (baseline) |
-| EgoMLP | 0,7564–0,7646 | Chờ CP4 | Chờ CP6 |
-| PercMLP | 0,6187–0,6329 | Chờ CP4 | Chờ CP6 |
+| constant-velocity | 1,2488 | 20,0486 | Chờ CP6 |
+| IDM | 1,5452 | 0,0694 | (baseline) |
+| EgoMLP | 0,7564–0,7646 | 15,4700–22,4072 | Chờ CP6 |
+| PercMLP | 0,6187–0,6329 | 0,3122–1,9077 | Chờ CP6 |
 | PercMLP+ (sau khi sửa) | | | |
 
 ## Câu 1 · Dữ liệu
@@ -55,12 +55,28 @@ Do đó log không đủ phủ vùng khó; trung bình trên log có thể che t
 ## Câu 4 · Vòng hở và vòng kín
 Dán bảng L2 và tỷ lệ va chạm của bốn bộ điều khiển (kèm hạng ở mỗi cách chấm). Cặp nào đổi thứ tự? Vì sao IDM có L2 như vậy mà vẫn lái tốt? Vì sao EgoMLP có L2 tốt hơn constant-velocity mà vẫn đâm?
 
-(trả lời ở đây)
+Chấm 2.883 quỹ đạo giữ lại, gồm 165 đoạn xe dẫn phanh. Bảng dưới dùng L2 và tỷ lệ va chạm trung bình qua seed để xếp hạng, đồng thời nêu dải để tránh che biến thiên.
+
+| Bộ điều khiển | L2 trung bình (m) / hạng | Va chạm trung bình (%) / hạng | Dải va chạm (%) |
+|---|---|---|---|
+| constant-velocity | 1,2488 / 3 | 20,0486 / 4 | 20,0486 |
+| IDM | 1,5452 / 4 | 0,0694 / 1 | 0,0694 |
+| EgoMLP | 0,7591 / 2 | 19,9792 / 3 | 15,4700–22,4072 |
+| PercMLP | 0,6251 / 1 | 0,9712 / 2 | 0,3122–1,9077 |
+
+Ba cặp đảo thứ tự là IDM với constant-velocity, EgoMLP và PercMLP. IDM không tối ưu bắt chước quỹ đạo người nên L2 cao, nhưng phản ứng trực tiếp với gap và closing để giữ khoảng cách.  
+EgoMLP chỉ nhìn lịch sử tốc độ bản thân nên có thể đoán tốt quán tính trong log, nhưng không thấy xe trước đang gần/phanh; sai số tự điều khiển tích lũy làm trạng thái lệch khỏi tập huấn luyện.  
+PercMLP có cảm nhận nên tốt hơn EgoMLP nhưng vẫn chưa bằng baseline vòng kín. Nguồn: [openloop.json](evidence/openloop.json), [closedloop.json](evidence/closedloop.json), [hình so sánh](evidence/openloop_vs_closedloop.png).
 
 ## Câu 5 · Một lần chạy chưa đủ
 EgoMLP dao động bao nhiêu giữa các seed? Khoảng tin cậy Wilson nói gì? Nếu bạn chỉ chạy đúng một seed thì có thể báo kết quả nào, và vì sao điều đó nguy hiểm?
 
-(trả lời ở đây)
+EgoMLP trên 5 seed có tỷ lệ va chạm 15,4700%, 20,7076%, 21,8869%, 22,4072%, 19,4242%; dải rộng 6,9372 điểm phần trăm.  
+Seed 8667 tốt nhất có 446/2.883 va chạm, Wilson 95% [14,1960%; 16,8359%]; seed 8670 xấu nhất có 646/2.883, khoảng [20,9224%; 23,9654%].  
+Hai khoảng không chồng nhau trong phép đo này. Wilson diễn tả bất định lấy mẫu quỹ đạo dưới giả định mẫu phù hợp, còn dải qua seed diễn tả biến thiên huấn luyện; không thay thế được nhau.  
+Chỉ chọn seed tốt nhất sẽ báo 15,47%, trông tốt hơn constant-velocity 20,05%; chọn seed xấu nhất sẽ báo 22,41%, trông kém hơn.  
+Vì vậy cần báo cả 5 seed và khoảng tin cậy, giữ tập test cố định; không chọn seed theo test. Các quỹ đạo có thể còn phụ thuộc theo bối cảnh nên cũng không diễn giải Wilson là bảo đảm an toàn thực tế.  
+Nguồn: mục `logs.EgoMLP.per_seed` trong [closedloop.json](evidence/closedloop.json).
 
 ## Câu 6 · Tác nhân phản ứng
 Dán bảng "xe sau phát lại" và "xe sau phản ứng". `T` bạn hiệu chỉnh là bao nhiêu, xe sau chân thực đến mức nào so với xe không phản ứng? Vì sao IDM bị tính "va chạm giả" khi xe sau chỉ phát lại, và điều này làm đổi kết luận về bộ điều khiển ra sao?
