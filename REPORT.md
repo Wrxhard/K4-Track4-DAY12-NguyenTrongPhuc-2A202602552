@@ -16,10 +16,10 @@
 
 | Bộ điều khiển | L2 vòng hở (m) | Va chạm vòng kín trên log (%) | Quyết định cổng |
 |---|---|---|---|
-| constant-velocity | 1,2488 | 20,0486 | Chờ CP6 |
+| constant-velocity | 1,2488 | 20,0486 | BLOCK: R2, R3, R4, R6 |
 | IDM | 1,5452 | 0,0694 | (baseline) |
-| EgoMLP | 0,7564–0,7646 | 15,4700–22,4072 | Chờ CP6 |
-| PercMLP | 0,6187–0,6329 | 0,3122–1,9077 | Chờ CP6 |
+| EgoMLP | 0,7564–0,7646 | 15,4700–22,4072 | BLOCK: R2–R6 |
+| PercMLP | 0,6187–0,6329 | 0,3122–1,9077 | BLOCK: R2–R6 |
 | PercMLP+ (sau khi sửa) | | | |
 
 ## Câu 1 · Dữ liệu
@@ -98,7 +98,11 @@ Với replay và ego trễ 0,6 s, IDM 75,741% trông chỉ nhỉnh hơn constant
 ## Câu 7 · Cổng phát hành và sửa
 Quy tắc nào chặn PercMLP và nguyên nhân gốc là gì (dẫn số)? Bạn sửa bằng gì và vì sao nó chữa đúng nguyên nhân? Sau khi qua cổng, PercMLP+ có **tốt hơn** IDM không? Nó có nên được phát hành không, và bạn đề xuất làm gì trước khi quyết định?
 
-(trả lời ở đây)
+CP6: PercMLP bị R2–R6 chặn, còn R1 và R7 qua. R2 có cận trên 95% 2,4748% > baseline 0,0694% + 1 điểm; R3 có cận trên lát cắt 13,0124% > 0,6061% + 5 điểm.  
+R4 có 15,7407% lưới tránh được nhưng vẫn đâm > 2%; R5 có dải seed rộng 1,5956 điểm > 1 điểm; R6 có va chạm reactive 23,1852% > baseline 7,4444% + 2 điểm.  
+Nguyên nhân thứ nhất là thiếu tình huống cắt vào khó trong log, thể hiện ở R4/R6 và phần lưới đòi phanh hơn mức người lái đã thấy. Nguyên nhân thứ hai là sai số bắt chước tích lũy khi tự lái, thể hiện ở lỗi log/lát cắt và biến thiên seed.  
+Hướng sửa: thêm cửa sổ cắt vào mô phỏng gắn nhãn IDM để phủ tình huống thiếu; DAgger cho mô hình tự lái trên tập train rồi hỏi IDM dự báo từ đúng trạng thái nó vừa đi vào, giúp học cách hồi phục.  
+Chưa kết luận sau sửa ở CP6; bước tiếp theo phải chạy lại đúng cổng và báo kết quả thực tế. Nguồn: [gate.json](evidence/gate.json), [closedloop.json](evidence/closedloop.json).
 
 ## Câu 8 · Bài lab này không chứng minh được gì
 Chọn **ít nhất ba** giới hạn quan trọng nhất đối với việc quyết định phát hành và giải thích vì sao mỗi cái làm kết luận của bạn kém chắc chắn. Điều gì cần làm tiếp để thu hẹp khoảng cách đến thế giới thật?
