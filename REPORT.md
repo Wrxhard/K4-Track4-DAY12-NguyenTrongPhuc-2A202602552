@@ -16,10 +16,10 @@
 
 | Bộ điều khiển | L2 vòng hở (m) | Va chạm vòng kín trên log (%) | Quyết định cổng |
 |---|---|---|---|
-| constant-velocity | | | |
-| IDM | | | (baseline) |
-| EgoMLP | | | |
-| PercMLP | | | |
+| constant-velocity | 1,2488 | Chờ CP4 | Chờ CP6 |
+| IDM | 1,5452 | Chờ CP4 | (baseline) |
+| EgoMLP | 0,7564–0,7646 | Chờ CP4 | Chờ CP6 |
+| PercMLP | 0,6187–0,6329 | Chờ CP4 | Chờ CP6 |
 | PercMLP+ (sau khi sửa) | | | |
 
 ## Câu 1 · Dữ liệu
@@ -75,4 +75,44 @@ Quy tắc nào chặn PercMLP và nguyên nhân gốc là gì (dẫn số)? Bạ
 ## Câu 8 · Bài lab này không chứng minh được gì
 Chọn **ít nhất ba** giới hạn quan trọng nhất đối với việc quyết định phát hành và giải thích vì sao mỗi cái làm kết luận của bạn kém chắc chắn. Điều gì cần làm tiếp để thu hẹp khoảng cách đến thế giới thật?
 
-(trả lời ở đây)
+Thứ nhất, thế giới chỉ có chuyển động dọc 1 chiều: không kiểm tra đánh lái, giao lộ hay người đi bộ, nên không thể suy ra an toàn của hệ thống lái hoàn chỉnh. Cần thêm kịch bản đa tác nhân 2D/3D.  
+Thứ hai, xe dẫn vẫn phát lại log; nó không phản ứng với xe thử. Kết quả thay đổi khi xe sau được phản ứng cho thấy giả định thế giới có thể đổi kết luận, cần hiệu chỉnh và kiểm chứng nhiều loại tác nhân bằng log độc lập.  
+Thứ ba, cảm nhận chủ yếu lý tưởng; nhiễu gap 1 m và tốc độ xe dẫn 0,5 m/s chỉ là vài mức mô phỏng, chưa có mất dấu, sai đồng bộ hay lỗi cảm biến kéo dài. Cần dữ liệu cảm biến và kiểm thử lỗi có tương quan theo thời gian.  
+Thứ tư, 2.700 ô và 5 seed chưa bảo đảm gặp sự kiện hiếm; các ô cùng mô hình vật lý cũng không đại diện cho mọi phân bố giao thông. Cần tập tình huống độc lập, tìm phản ví dụ và phân tầng theo điều kiện vận hành.  
+Cuối cùng, ngưỡng cổng là tiêu chí của lab và nhãn sửa đến từ IDM; qua cổng chỉ hỗ trợ kết luận trong phạm vi mô phỏng. Trước phát hành cần kiểm định ngoài phân bố, đo độ thoải mái/tiến triển và thử nghiệm có kiểm soát, có giám sát.  
+Các quy mô và mức nhiễu đối chiếu trong [scenarios.json](evidence/scenarios.json) và [closedloop.json](evidence/closedloop.json).
+
+## Chạy local và chụp màn hình
+
+CP3: 167.553 cửa sổ train, 71.580 cửa sổ test; lát cắt phanh chiếm 4,3546%. L2 trung bình/lát cắt lần lượt: constant-velocity 1,2488/1,8660 m; IDM 1,5452/1,6373 m; EgoMLP 0,7591/1,0310 m; PercMLP 0,6251/0,8318 m. Lát cắt đều khó hơn trung bình. Nguồn: [openloop.json](evidence/openloop.json).
+
+Chạy PowerShell trong thư mục chứa `run_all.py`. Dữ liệu `data/`, model `work/` và hai file xuất cho 3D được giữ local theo `.gitignore`.
+
+```powershell
+$env:PYTHONUTF8 = '1'
+$env:OPENBLAS_NUM_THREADS = '1'
+python -m pip install -r requirements.txt
+python run_all.py --student-id 2A202602552 --seeds 5
+python -m unittest discover -s tests -v
+python scripts/check_submission.py --save-verify
+python scripts/export_viz.py
+python viz/serve.py
+```
+
+Mở <http://localhost:8765> sau lệnh cuối; giữ cửa sổ terminal chạy server. Lần mở lại trên máy hiện tại chỉ cần hai lệnh `export_viz.py` và `viz/serve.py` nếu model đã có. Trang 3D cần internet để nạp three.js.
+
+Rubric chấm JSON và hình do pipeline sinh, không bắt buộc ảnh chụp màn hình. Nếu cần nộp thêm screenshot, dùng `Win + Shift + S`, lưu ảnh thật vào `evidence/screenshots/`; không dùng hình 3D để thay số liệu JSON.
+
+| CP | Nội dung cần hiện rõ khi chụp | Evidence chính |
+|---|---|---|
+| 0 | Terminal `python run_all.py data`: số quỹ đạo, tương quan và số trùng | `data_audit.json` |
+| 1 | Terminal bước `replay`: 600 đoạn, float32, AEB, realtime | `replay.json` |
+| 2 | Mở `evidence/scenarios_idm.png`: đủ hai panel và đường biên | `scenarios.json`, `scenarios_idm.png` |
+| 3 | Terminal bước `openloop`: bảng L2 và lát cắt | `openloop.json` |
+| 4 | Mở `evidence/openloop_vs_closedloop.png`, kèm bảng hạng trong terminal | `closedloop.json` |
+| 5 | Terminal bước `agents`: T hiệu chỉnh, hai bảng phát lại/phản ứng | `agents.json` |
+| 6 | Terminal bước `gate`: các quy tắc BLOCK của PercMLP | `gate.json` |
+| 7 | Terminal bước `fix`: trước/sau, kết quả cổng và thử tốc độ 20 m/s | `fix.json` |
+| 8 | Trình duyệt localhost: chọn PercMLP+, seed, cảnh cắt vào và bảng cổng cuối trang | Chỉ minh họa bổ sung |
+
+Để chụp lại một bước, dùng `python run_all.py --student-id 2A202602552 --seeds 5 <tên-bước>`. Bước `openloop` và `fix` huấn luyện lại; sau khi chạy lại `closedloop`/`agents` cần chạy `fix` để cập nhật đủ PercMLP+ trước khi kiểm tra nộp bài. Sau khi thêm ảnh: `git add evidence/screenshots`, `git commit -m "docs: add local checkpoint screenshots"`, `git push origin main`.
