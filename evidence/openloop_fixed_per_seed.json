@@ -1,0 +1,29 @@
+{
+  "student": {
+    "student_id": "2A202602552",
+    "split_seed": 8162,
+    "model_seed": 8667,
+    "v_ego": 12.0
+  },
+  "source": "computed from saved PercMLP+ models on the same held-out windows",
+  "per_seed": [
+    {
+      "seed": 8667,
+      "all": 0.8710415363311768,
+      "brake_slice": 1.02703058719635,
+      "slice_share": 0.043545683151718355
+    },
+    {
+      "seed": 8668,
+      "all": 0.8338799476623535,
+      "brake_slice": 0.9968134164810181,
+      "slice_share": 0.043545683151718355
+    },
+    {
+      "seed": 8669,
+      "all": 0.8218627572059631,
+      "brake_slice": 0.9331608414649963,
+      "slice_share": 0.043545683151718355
+    }
+  ]
+}
