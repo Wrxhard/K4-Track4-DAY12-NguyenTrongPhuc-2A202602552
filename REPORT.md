@@ -4,11 +4,11 @@
 
 | | |
 |---|---|
-| Họ và tên | `<điền>` |
-| MSSV (đúng bằng `--student-id` bạn đã chạy) | `<điền>` |
-| GitHub | `<điền: tên tài khoản>` |
-| Seed chia dữ liệu / seed mô hình (xem `evidence/closedloop.json`, mục `student`) | `<điền>` |
-| Số seed huấn luyện bạn dùng (`--seeds`) | `<điền>` |
+| Họ và tên | Nguyễn Trọng Phúc |
+| MSSV (đúng bằng `--student-id` bạn đã chạy) | `2A202602552` |
+| GitHub | Wrxhard |
+| Seed chia dữ liệu / seed mô hình (xem `evidence/closedloop.json`, mục `student`) | 8162 / 8667, 8668, 8669, 8670, 8671 |
+| Số seed huấn luyện bạn dùng (`--seeds`) | 5 |
 
 ## Kết quả cuối
 
@@ -25,12 +25,22 @@
 ## Câu 1 · Dữ liệu
 Bước 0 bạn phát hiện những vấn đề gì ở dữ liệu? Vì sao không dùng cột `Acc_LV`, và bạn thay bằng gì? Bao nhiêu quỹ đạo bị loại vì trùng, và vì sao chia theo quỹ đạo?
 
-(trả lời ở đây)
+Dữ liệu có 992.679 dòng, 9.993 quỹ đạo ban đầu, lấy mẫu 0,1 s và độ dài 70–109 bước (trung vị 106).  
+Ba điểm cần xử lý là gia tốc xe dẫn không đáng tin, quỹ đạo trùng và nguy cơ rò rỉ khi chia theo khung hình.  
+Tương quan Acc_LV với đạo hàm tốc độ chỉ 0,04535, trong khi ở xe theo sau là 0,92909; thay bằng đạo hàm Speed_LV đã làm mượt để khai thác phanh.  
+Loại 383 quỹ đạo trùng hệt, còn 9.610; ID khác nhau không bảo đảm là hai mẫu độc lập.  
+Chia theo quỹ đạo sau loại trùng giữ các khung tương quan của cùng một đoạn trong cùng tập, tránh đưa gần như cùng tình huống vào cả train và test.  
+Nguồn: [data_audit.json](evidence/data_audit.json).
 
 ## Câu 2 · Phát lại
 Bản refactor float32 khác bit ở bao nhiêu đoạn, vượt dung sai ở bao nhiêu? Thay đổi AEB làm lệch bao nhiêu đoạn, và vì sao lệch ở đúng những khung đó (mở một đoạn ra xem)? Phát theo thời gian thật làm lộ ra điều gì mà phát nhanh nhất che đi?
 
-(trả lời ở đây)
+Cùng mã chạy lại cho 0/600 đoạn khác nhau; float32 đổi thứ tự phép toán khác bit ở cả 600 đoạn nhưng 0 đoạn vượt dung sai atol = rtol = 0,001 (sai khác lớn nhất khoảng 0,0004 m/s²).  
+Dung sai kết hợp tuyệt đối và tương đối tránh coi sai số làm tròn là thay đổi hành vi. AEB làm lệch 7/600 đoạn, nên đây là thay đổi có chọn lọc.  
+Đã mở đoạn 50: ở khung 98, gap = 4,3033 m, closing = 2,9189 m/s, TTC = 1,4743 s < ngưỡng 1,5 s; lệnh đổi từ −5,4363 sang −6 m/s².  
+Các khung 99–101 cũng có TTC dưới 1,5 s và lệnh gốc phanh nhẹ hơn −6, nên AEB can thiệp đúng điều kiện. Các giá trị này đọc từ replay_log được sinh bởi bước replay, không sửa JSON.  
+Fastest không có trễ/rớt; realtime có 582 khung trễ, 578 khung rớt trên 59.757 khung, làm 372 đoạn đổi lệnh.  
+Chi phí xử lý mô phỏng có spike vượt deadline 100 ms; phát nhanh không đặt deadline nên che mất lỗi thời gian. Nguồn: [replay.json](evidence/replay.json).
 
 ## Câu 3 · Kịch bản
 Lưới của bạn (tốc độ cruise, giới hạn khoảng cách, số ô): bao nhiêu % ô **không ai tránh được**? Độ trễ phản ứng 0 → 0,6 s làm vùng đâm của IDM tăng bao nhiêu? Log có phủ vùng khó không? (dẫn giới hạn phanh mạnh nhất của người lái trong log, và phần lưới đòi hỏi hơn thế)
